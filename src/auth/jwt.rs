@@ -72,7 +72,7 @@ impl JwtUtil {
 
     }
     //generateRefreshToken()대응
-    pub fn gerenate_refresh_token(&self, user_id: i64)->String{
+    pub fn generate_refresh_token(&self, user_id: i64)->String{
         let now=Utc::now().timestamp();
         let exp=now+self.refresh_expiration/1000;
 

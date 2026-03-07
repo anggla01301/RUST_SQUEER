@@ -92,7 +92,20 @@ impl UserRepository {
         sqlx::query(
             "UPDATE USER_ SET REFRESH_TOKEN = $1 WHERE USER_ID=$2"
         ).bind(refresh_token).bind(user_id).execute(&self.pool).await.ok();
+    }
 
+    //탈퇴 처리
+    pub async fn update_withdraw(&self, user_id: i64){
+        sqlx::query(
+            "UPDATE USER_ SET USER_IS_ACTIVE='N', REFRESH_TOKEN=NULL WHERE USER_ID=$1"
+        ).bind(user_id).execute(&self.pool).await.ok();
+    }
+
+    //userType 업데이트
+    pub async fn update_user_type(&self, user_id: i64, user_type: &str){
+        sqlx::query(
+            "UPDATE USER_ SET USER_TYPE=$1 WHERE USER_ID=$2"
+        ).bind(user_type).bind(user_id).execute(&self.pool).await.ok();
 
     }
 }
