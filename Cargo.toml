@@ -1,0 +1,69 @@
+[package]
+name = "squeer"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+# 웹 프레임워크(Spring Web MVC)
+axum = "0.8.8"
+tokio = { version = "1", features = ["full"] }
+tower = "0.5.3"
+tower-http = { version = "0.6.5", features = ["cors", "trace"] }
+
+# 직렬화
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+
+# 환경변수(application.yml)
+dotenv = "0.15.0"
+config = "0.15.19"
+
+
+#Oracle 지원은 매우 제한적
+
+# JWT(jjwt)
+jsonwebtoken = "10.3.0"
+
+# 유효성 검사(spring-boot-starter-validation)
+validator = {version="0.20.0",features = ["derive"]}
+
+# 비밀번호 해싱(Spring Security BCrypt)
+bcrypt = "0.19.0"
+
+#HTTP 클라이언트(OAuth2, OCI 스토리지 효출용)
+reqwest = {version = "0.13.2", features = ["json","native-tls"]}
+
+#OAuth2(spring-boot-starter-oauth2-client)
+oauth2 = "5.0.0"
+
+# 이미지 리사이즈(Thumbnailator)
+image = "0.25.9"
+
+#이메일 발송(spring-boot-starter-mail)
+lettre = {version = "0.11.19",features = ["tokio1-native-tls"]}
+
+
+# OpemAPI 문서 (springdoc)
+utoipa = {version = "5.4.0", features = ["axum_extras"]}
+utoipa-swagger-ui = {version = "9.0.2", features = ["axum"]}
+
+# 로깅(Spring 기본 로거)
+tracing = "0.1.44"
+thiserror = "2.0.18"
+
+# 닐찌/시간(LocalDateTime)
+chrono = {version = "0.4.44",features = ["serde"]}
+
+uuid = {version = "1.21.0",features = ["v4"]}
+
+
+# tracing 쓰면 subscriber도 같이 있어야 함
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 에러 처리 (나중에 쓸 거 미리 추가)
+anyhow = "1"
+
+once_cell = "1"
+regex = "1"
+
+sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres", "macros", "chrono", "uuid"] }
