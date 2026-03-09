@@ -36,7 +36,18 @@ async fn main() {
 
     //DB 연결
     let database_url=std::env::var("DATABASE_URL").expect("DATABASE_URL 없음");
-    let pool=sqlx::postgres::Pg
+    let pool=sqlx::postgres::PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&database_url)
+        .await
+        .expect("DB 연결 실패");
+    //state.rs에서 의존성 생성
+    let state=AppState::new(pool).await;
+
+    //routes.rs에서 라우터 가져와서 의존성 주입
+    let app=create_router()
+        .layer(Extension(state));
+
 
 
     //서버 실행
