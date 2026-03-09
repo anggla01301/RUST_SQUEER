@@ -1,4 +1,5 @@
 use axum::Router;
+use axum::extract::Extension;
 
 
 mod achievement;
@@ -19,7 +20,11 @@ mod servicecenter;
 mod status;
 mod store;
 mod user;
+mod state;
+mod routes;
 
+use state::AppState;
+use routes::create_router;
 
 #[tokio::main]
 async fn main() {
@@ -29,8 +34,10 @@ async fn main() {
     //.env로드
     dotenv::dotenv().ok();
 
-    //라우터(일반 빈 라우터)
-    let app=Router::new();
+    //DB 연결
+    let database_url=std::env::var("DATABASE_URL").expect("DATABASE_URL 없음");
+    let pool=sqlx::postgres::Pg
+
 
     //서버 실행
     let listener=tokio::net::TcpListener::bind("0.0.0.0:7777").await.unwrap();

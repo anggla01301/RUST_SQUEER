@@ -2,6 +2,7 @@ use crate::auth::model::User;
 use chrono::NaiveDateTime;
 use sqlx::PgPool;
 
+#[derive(Clone)]
 pub struct UserRepository {
     pool: PgPool, //DB 커넥션 풀(JpaRepository 대응)
 }

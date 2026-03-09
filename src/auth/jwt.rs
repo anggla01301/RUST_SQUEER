@@ -27,7 +27,7 @@ pub struct RefreshClaims {
     pub iat: i64,
     pub exp: i64,
 }
-
+#[derive(Clone)]
 pub struct JwtUtil {
     secret: String,
     //밀리초

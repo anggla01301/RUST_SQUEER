@@ -19,6 +19,7 @@ pub enum AuthError {
 }
 
 //@Service 대응
+#[derive(Clone)]
 pub struct AuthService {
     user_repository: UserRepository,
     jwt_util: JwtUtil,
