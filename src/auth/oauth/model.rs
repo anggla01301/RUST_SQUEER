@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::auth::model::User;
 
 //Java record 대응->Rust struct
 #[derive(Debug,Clone)]
@@ -96,4 +97,29 @@ impl OAuthUserInfo{
             _=>Err(UnsupportedProviderError),
         }
     }
+}
+
+//Java의 OAuthPrincipal.java
+#[derive(Debug,Clone)]
+pub struct OAuthPrincipal{
+    pub user: User,
+    pub attributes: HashMap<String, serde_json::Value>,
+}
+
+impl OAuthPrincipal{
+    pub fn new(user: User, attributes: HashMap<String, serde_json::Value>)->Self{
+        Self{user,attributes}
+    }
+
+    //getAuthorites() 대응
+    pub fn get_role(&self)->String{
+        format!("ROLE_{}",self.user.user_type)
+    }
+
+    //getName() 대응
+    pub fn get_name(&self)->Option<&str>{
+        self.user.provider_id.as_deref()
+    }
+
+
 }
