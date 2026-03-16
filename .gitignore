@@ -2,3 +2,11 @@
 
 # 클로드 텍스트 분석
 *.txt
+.claude
+
+# api 및 환경변수
+*/.env
+.env
+
+# sql 마이그레이션 파일
+migrations/*

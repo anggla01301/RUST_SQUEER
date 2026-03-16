@@ -31,7 +31,7 @@ validator = {version="0.20.0",features = ["derive"]}
 bcrypt = "0.19.0"
 
 #HTTP 클라이언트(OAuth2, OCI 스토리지 효출용)
-reqwest = {version = "0.13.2", features = ["json","native-tls"]}
+reqwest = {version = "0.13.2", features = ["json","native-tls", "multipart", "form"]}
 
 #OAuth2(spring-boot-starter-oauth2-client)
 oauth2 = "5.0.0"

@@ -1,140 +1,149 @@
+use anyhow::{Context, Result};
 use chrono::Utc;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::env;
 
-//Claims->JWT payload 구조체
-//Java의 Claims 대응
+// JWT 생성과 검증을 담당하는 유틸리티다.
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    //subject(userId)
     pub sub: String,
-    //.claim("userEmail")대응
     pub user_email: String,
-    //.claim("userType")대응
     pub user_type: String,
-    //issuedAt
+    pub token_type: String,
     pub iat: i64,
-    //expiration
     pub exp: i64,
 }
 
-//RefreshClaims->refresh token payload
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RefreshClaims {
-    //userId
     pub sub: String,
+    pub token_type: String,
     pub iat: i64,
     pub exp: i64,
 }
+
 #[derive(Clone)]
 pub struct JwtUtil {
     secret: String,
-    //밀리초
     expiration: i64,
-    //밀리초
     refresh_expiration: i64,
 }
 
 impl JwtUtil {
-    //@Value 생성자 대응->.env에서 읽어서 생성
-    pub fn new() -> Self {
-        Self {
-            secret: env::var("JWT_SECRET").expect("JWT_SECRET 없음"),
-            expiration: env::var("JWT_EXPIRATION")
-                .expect("JWT_EXPIRATION 없음")
-                .parse()
-                .unwrap(),
-            refresh_expiration: env::var("JWT_REFRESH_EXPIRATION")
-                .expect("JWT_REFRESH_EXPIRATION 없음")
-                .parse()
-                .unwrap(),
-        }
-    }
-    //generateToken()대응
-    pub fn generate_token(&self, user_id: i64, user_email: &str, user_type: &str) -> String {
-        let now = Utc::now().timestamp();//현재 시간(초)
-        let exp=now+self.expiration/1000;//밀리초->초 변환
+    pub fn new() -> Result<Self> {
+        let secret = env::var("JWT_SECRET").context("JWT_SECRET 없음")?;
+        let expiration = env::var("JWT_EXPIRATION")
+            .context("JWT_EXPIRATION 없음")?
+            .parse()
+            .context("JWT_EXPIRATION 숫자 파싱 실패")?;
+        let refresh_expiration = env::var("JWT_REFRESH_EXPIRATION")
+            .context("JWT_REFRESH_EXPIRATION 없음")?
+            .parse()
+            .context("JWT_REFRESH_EXPIRATION 숫자 파싱 실패")?;
 
-        let claims=Claims{
+        Ok(Self {
+            secret,
+            expiration,
+            refresh_expiration,
+        })
+    }
+
+    pub fn generate_token(&self, user_id: i64, user_email: &str, user_type: &str) -> String {
+        let now = Utc::now().timestamp();
+        let claims = Claims {
             sub: user_id.to_string(),
             user_email: user_email.to_string(),
             user_type: user_type.to_string(),
+            token_type: "access".to_string(),
             iat: now,
-            exp,
+            exp: now + self.expiration / 1000,
         };
-
         encode(
             &Header::default(),
             &claims,
             &EncodingKey::from_secret(self.secret.as_bytes()),
-        ).unwrap()
-
-    }
-    //generateRefreshToken()대응
-    pub fn generate_refresh_token(&self, user_id: i64)->String{
-        let now=Utc::now().timestamp();
-        let exp=now+self.refresh_expiration/1000;
-
-        let claims =RefreshClaims{
-            sub: user_id.to_string(),
-            iat: now,
-            exp,
-
-        };
-
-        encode(
-            &Header::default(),
-            &claims,
-            &EncodingKey::from_secret(self.secret.as_bytes()),
-
-        ).unwrap()
-    }
-    //getUserId() 대응
-    pub fn get_user_id(&self, token: &str)->Option<i64>{
-        self.get_claims(token)
-            .ok()
-            .and_then(|c|c.claims.sub.parse().ok())
-    }
-    //getUserType() 대응
-    pub fn get_user_type(&self, token: &str)->Option<String>{
-        self.get_claims(token)
-            .ok()
-            .map(|c| c.claims.user_type)
-    }
-
-    //validateToken() 대응
-    pub fn validate_token(&self, token: &str)->bool{
-        match self.get_claims(token){
-            Ok(_)=>true,
-            Err(e)=>{
-                //Java의 catch 블록들 대응
-                match e.kind(){
-                    jsonwebtoken::errors::ErrorKind::ExpiredSignature=>{
-                        tracing::debug!("JwtUtil 만료된 토큰");
-                    }
-                    jsonwebtoken::errors::ErrorKind::InvalidSignature=>{
-                        tracing::warn!("JwtUtil 서명 불일치");
-                    }
-                    jsonwebtoken::errors::ErrorKind::InvalidToken=>{
-                        tracing::debug!("JwtUtil 잘못된 형식의 토큰");
-                    }
-                    _=>{
-                        tracing::warn!("JwtUtil JWT 오류: {:?}",e);
-                    }
-                }
-                false
-            }
-        }
-
-    }
-    //getClaims() 대응(private)
-    fn get_claims(&self, token: &str)->Result<jsonwebtoken::TokenData<Claims>, jsonwebtoken::errors::Error>{
-        decode::<Claims>(
-            token, &DecodingKey::from_secret(self.secret.as_bytes()),&Validation::new(Algorithm::HS256),
-
         )
-
+        .unwrap()
     }
 
+    pub fn generate_refresh_token(&self, user_id: i64) -> String {
+        let now = Utc::now().timestamp();
+        let claims = RefreshClaims {
+            sub: user_id.to_string(),
+            token_type: "refresh".to_string(),
+            iat: now,
+            exp: now + self.refresh_expiration / 1000,
+        };
+        encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(self.secret.as_bytes()),
+        )
+        .unwrap()
+    }
+
+    pub fn get_user_id(&self, token: &str) -> Option<i64> {
+        self.decode_access(token)
+            .ok()
+            .and_then(|c| c.claims.sub.parse().ok())
+    }
+
+    pub fn get_user_type(&self, token: &str) -> Option<String> {
+        self.decode_access(token).ok().map(|c| c.claims.user_type)
+    }
+
+    pub fn get_refresh_user_id(&self, token: &str) -> Option<i64> {
+        self.decode_refresh(token)
+            .ok()
+            .and_then(|c| c.claims.sub.parse().ok())
+    }
+
+    pub fn validate_token(&self, token: &str) -> bool {
+        self.decode_access(token).is_ok()
+    }
+
+    pub fn validate_refresh_token(&self, token: &str) -> bool {
+        self.decode_refresh(token).is_ok()
+    }
+
+    fn decode_access(
+        &self,
+        token: &str,
+    ) -> Result<jsonwebtoken::TokenData<Claims>, jsonwebtoken::errors::Error> {
+        let data = self.decode::<Claims>(token)?;
+        if data.claims.token_type == "access" {
+            Ok(data)
+        } else {
+            Err(jsonwebtoken::errors::Error::from(
+                jsonwebtoken::errors::ErrorKind::InvalidToken,
+            ))
+        }
+    }
+
+    fn decode_refresh(
+        &self,
+        token: &str,
+    ) -> Result<jsonwebtoken::TokenData<RefreshClaims>, jsonwebtoken::errors::Error> {
+        let data = self.decode::<RefreshClaims>(token)?;
+        if data.claims.token_type == "refresh" {
+            Ok(data)
+        } else {
+            Err(jsonwebtoken::errors::Error::from(
+                jsonwebtoken::errors::ErrorKind::InvalidToken,
+            ))
+        }
+    }
+
+    fn decode<T: DeserializeOwned>(
+        &self,
+        token: &str,
+    ) -> Result<jsonwebtoken::TokenData<T>, jsonwebtoken::errors::Error> {
+        decode::<T>(
+            token,
+            &DecodingKey::from_secret(self.secret.as_bytes()),
+            &Validation::new(Algorithm::HS256),
+        )
+    }
 }
