@@ -1,7 +1,6 @@
 use crate::auth::model::User;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use utoipa::ToSchema;
+
 
 // OAuth 로그인 과정에서 쓰는 값 객체들이다.
 
@@ -126,8 +125,4 @@ impl OAuthPrincipal {
     }
 }
 
-// 프런트가 공급자 access token을 직접 넘기는 로그인 요청 DTO다.
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
-pub struct SocialLoginRequest {
-    pub access_token: String,
-}
+

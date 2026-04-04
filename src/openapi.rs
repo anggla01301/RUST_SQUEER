@@ -4,12 +4,12 @@ use utoipa::openapi::security::{
 use utoipa::openapi::Components;
 use utoipa::{Modify, OpenApi};
 
-use crate::auth::model::{
+use crate::auth::dto::{
     LoginRequestDto, LoginResponseDto, RefreshResponse, SetUserRoleRequest, StoreSignUpRequestDto,
     TotalSignUpRequestDto, UserProfileUpdateDto, UserProfileUpdateResponseDto,
     UserSignUpRequestDto,
 };
-use crate::auth::oauth::model::SocialLoginRequest;
+use crate::auth::oauth::dto::SocialLoginRequest;
 
 // Swagger/OpenAPI 문서에 노출할 엔드포인트와 스키마를 모아 둔 설정 파일이다.
 

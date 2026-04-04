@@ -17,8 +17,12 @@ use crate::auth::jwt::JwtUtil;
 // access token, refresh token 발급에 사용한다.
 
 use crate::auth::model::{
-    LoginRequestDto, LoginResponseDto, StoreSignUpRequestDto, TotalSignUpRequestDto, User,
-    UserInfo, UserProfileUpdateDto, UserProfileUpdateResponseDto, UserSignUpRequestDto,
+    User,UserInfo
+};
+
+use crate::auth::dto::{
+    LoginRequestDto, LoginResponseDto, StoreSignUpRequestDto, TotalSignUpRequestDto,
+    UserProfileUpdateDto, UserProfileUpdateResponseDto, UserSignUpRequestDto,
 };
 // 인증 관련 DTO / 엔티티들이다.
 //

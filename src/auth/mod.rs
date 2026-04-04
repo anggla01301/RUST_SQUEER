@@ -10,3 +10,4 @@ pub(crate) mod repository;
 pub(crate) mod service;
 
 pub(crate) mod oauth;
+pub(crate) mod dto;

@@ -158,6 +158,11 @@ pub async fn jwt_middleware(
         None => return Err((StatusCode::UNAUTHORIZED, "유저 없음".to_string())),
     };
 
+    let user_type = jwt_util.get_user_type(&token).unwrap_or_default();
+
+    request.extensions_mut().insert(user_id);
+    request.extensions_mut().insert(user_type);
+
     // request extension 에 user_id 를 저장한다.
     //
     // "이 요청은 인증된 요청이고, 그 사용자 ID는 이 값이다"

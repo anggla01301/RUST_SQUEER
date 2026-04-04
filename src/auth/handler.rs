@@ -46,9 +46,11 @@ use crate::auth::jwt::JwtUtil;
 // TotalSignUpRequestDto: 통합 회원가입 요청 body
 // UserProfileUpdateDto: 프로필 수정 요청 body
 // UserSignUpRequestDto: 일반 유저 회원가입 요청 body
-use crate::auth::model::{
-    LoginRequestDto, RefreshResponse, SetUserRoleRequest, StoreSignUpRequestDto,
-    TotalSignUpRequestDto, UserProfileUpdateDto, UserSignUpRequestDto,
+use crate::auth::model::User;
+use crate::auth::dto::{
+    LoginRequestDto, LoginResponseDto, SetUserRoleRequest,
+    UserProfileUpdateDto, UserProfileUpdateResponseDto,
+    UserSignUpRequestDto, StoreSignUpRequestDto, TotalSignUpRequestDto, RefreshResponse,
 };
 
 use crate::auth::service::{AuthError, AuthService};

@@ -1,7 +1,7 @@
-use super::model::SocialLoginRequest;
+use super::dto::SocialLoginRequest;
 use super::service::{OAuthService, OAuthSuccessResponse};
 use crate::auth::cookie::build_refresh_cookie;
-use crate::auth::model::LoginResponseDto;
+use crate::auth::dto::LoginResponseDto;
 
 use axum::{
     extract::{Query, State},
